@@ -32,7 +32,7 @@
 
 # 예시
 ``` c#
-public interface IServiceA()
+public interface IServiceA
 {
     public string someValue { get; }
     public void DoSomeThing();
@@ -48,7 +48,7 @@ public class SomeService : IServiceA
     }
 }
 
-public class Client()
+public class Client
 {
     private readonly IServiceA serviceA;
 
