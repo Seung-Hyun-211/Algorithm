@@ -76,3 +76,23 @@ class CompsitionRoot
 
 >![UML](../Image/DI_UML.jpg)
 >출처 [Wiki](https://ko.wikipedia.org/wiki/의존성_주입)
+
+
+## 주의점
+
+의존성 주입은 Composition Root 단계에서 이미 인터페이스를 연결 했다는 전제 조건이 있기 때문에<br>
+```?.``` 혹은 ```== null```과 같은 체크는 잘못된 것이다.
+
+예를 들어 아래와 같이 인터페이스가 없을 수 있다는 생각 자체가 잘못된 것이다.
+```c#
+class Client
+{
+    IServiceA serviceA;
+    void DoSomeThing()
+    {
+        //전제 자체가 잘못됨
+        if(serviceA != null){ }
+        serviceA?.DoSomeThing();
+    }
+}
+```
