@@ -14,12 +14,23 @@
 ```g(n)``` : 출발 지점부터 꼭짓점 n 까지의 경로 가중치<br>
 ```h(n)``` : 꼭짓점 n 으로부터 목표까지의 추정 경로 가중치
 
+## 변경 Log
+
+>  탐색을 통해 도달 할 수 있는지 판단 확인했음<br>
+> 
+>  하지만이동경로를 찾을 수 없음<br>
+>  from 테이블을 만들어서 해결<br>
+> 
+>  최단거리가 기록되지 않음<br>
+>  F() 테이블을 만들어 cost를 비교해 짧은 거리를 from에 저장해서 해결
+
 ```cpp
-#define COST_UNIT 10        //g값과 단위를 맞추기 위한 수
-#define STRAIGHT_COST 10    //상하좌우 이동시 g에 추가하는 코스트
-#define DIAGONAL_COST 14    //대각선 이동시 g에 추가하는 코스트
-#define MOVEABLE_DIRECTION 8
-#define MAX_MAP_SIZE 1000
+#define COST_UNIT 10            // g값과 단위를 맞추기 위한 수
+#define STRAIGHT_COST 10        // 상하좌우 이동시 g에 추가하는 코스트
+#define DIAGONAL_COST 14        // 대각선 이동시 g에 추가하는 코스트
+#define MOVEABLE_DIRECTION 8    // 모든 방향의 총 갯수
+#define MAX_MAP_SIZE 1000       // 맵 사이즈
+
 
 struct Node {
     Node(int px, int py, int g, int h) : px(px), py(py), g(g), h(h) {}
