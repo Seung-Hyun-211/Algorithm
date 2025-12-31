@@ -15,17 +15,73 @@
 ```h(n)``` : 꼭짓점 n 으로부터 목표까지의 추정 경로 가중치
 
 ```cpp
-int AStar(int sx, int sy, int gx, int gy)
+#define COST_UNIT 10        //g값과 단위를 맞추기 위한 수
+#define STRAIGHT_COST 10    //상하좌우 이동시 g에 추가하는 코스트
+#define DIAGONAL_COST 14    //대각선 이동시 g에 추가하는 코스트
+#define MOVEABLE_DIRECTION 8
+#define MAX_MAP_SIZE 1000
+
+struct Node {
+    Node(int px, int py, int g, int h) : px(px), py(py), g(g), h(h) {}
+
+    int px;
+    int py;
+    int g;
+    int h;
+
+    int F() const { return g + h; };
+    void Print(){ 
+        cout << "/ x " << px << "/ y " << py << "/ g " << g << "/ h " << h <<"/ f" << F() << endl;
+    }
+};
+struct NodeCompare
 {
-    priority_queue<pair<int,int>, vector<pair<int,int>>, greater<pair<int,int>>> q;
-    vector<vecotr<vector<int>>> m(1000,vector<vector<int>>(1000, vector<int>(2,INT_MAX)));
-    
-
-
-    q.push({0,0});
-
-
-
+    bool operator()(const Node& n1, const Node& n2) const {
+        return n1.F() > n2.F();
+    }
+};
+int GetH(const int& cx, const int& cy, const int& gx, const int& gy) {
+    int dx = cx - gx;
+    int dy = cy - gy;
+    return (int)floor(COST_UNIT * sqrt(dx * dx + dy * dy));
 }
 
+
+int AStar(const vector<vector<bool>>& m, const int& startx, const int& starty, const int& goalx, const int& goaly)
+{
+    int step = 0;
+    priority_queue<Node, vector<Node>, NodeCompare> q;
+    vector<vector<bool>> visit(MAX_MAP_SIZE, vector<bool>(MAX_MAP_SIZE, false));
+    q.push(Node(startx, starty, 0, GetH(startx, starty, goalx, goaly)));
+
+    //8방향 이동
+    //0포함 짝수 -> 십자, 홀수->대각
+    int dirx[8] = {  0, 1, 1, 1, 0,-1,-1,-1 };
+    int diry[8] = { -1,-1, 0, 1, 1, 1, 0,-1 };
+
+    while (!q.empty()) {
+        Node n = q.top();
+        visit[n.py][n.px] = true;
+        n.Print();
+        if (n.px == goalx && n.py == goaly)
+        {
+            return step;
+        }
+        q.pop();
+        for (int i = 0; i < MOVEABLE_DIRECTION; i++)
+        {
+            int nx = n.px + dirx[i];
+            int ny = n.py + diry[i];
+            if (nx < 0 || ny < 0 || nx >= MAX_MAP_SIZE || ny >= MAX_MAP_SIZE || m[ny][nx] == false || visit[ny][nx] == true)
+                continue;
+
+            int gCost = i % 2 == 0 ? STRAIGHT_COST : DIAGONAL_COST;
+            q.push(Node(nx, ny, n.g + gCost, GetH(nx, ny, goalx, goaly)));
+        }
+
+        step++;
+    }
+
+    return -1;
+}
 ```
