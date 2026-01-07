@@ -4,11 +4,14 @@
 노드의 왼쪽 서브트리는 그 노드보다 작은 값들을 담고, 오른쪽 서브트리는 더 큰 값을 가진 값들을 담는다.<br>
 어느 노드를 확인 하더라도 하위 트리는 이진 탐색 트리를 만족한다.
 
-추가(삽입), 검색, 제거 등의 기능이 필요하며 정렬된 데이터를 이진 탐색을 통해 빠르게 검사할 수 있음
+추가(삽입), 검색, 제거 등의 기능이 필요하며 정렬된 데이터를 얻을 수 있음<br>
+모든 기능이 이진탐색을 통해 빠르게 이루어짐
+
 
 
 ## 변경 Log
 > 노드, 이진탐색 트리의 기본 구조, 함수를 작성함<br>
+> 노드를 구조체로 변경하고 트리의 내부에서 선언<br>
 
 
 ## 이진 탐색 트리 코드
@@ -21,6 +24,15 @@
 ///////////////////////////////////////////////////////
 class BST
 {
+private :
+	struct Node{
+		int data;
+		Node* left;
+		Node* right;
+
+		Node(int value) :data(value), left(nullptr), right(nullptr) {};
+	};
+
 private:
 	Node* root;
 	int count;
@@ -43,41 +55,103 @@ public:
 
 	void Add(int value);
 	bool Remove(int value);
-	Node* Search(int value);
+	bool Search(Node* current, int value);
 
 	void Clear(Node*& ptr);
+
+private:
+	void AddNode( Node*& current, int value);
+	bool RemoveNode(Node*& current, int value);
+	Node* GetMin(Node* current);
 };
+
+
 ///////////////////////////////////////////////////////
 //BST.cpp
 ///////////////////////////////////////////////////////
-void  BST::Add(int value)
+void BST::Add(int value)
 {
-	count++;
-
-	if (root)
+	if (!root)
 		root = new Node(value);
-	else
-		root->Add(new Node(value));
+
+	if (root->data < value)
+		AddNode(root->right, value);
+	else if (root->data > value)
+		AddNode(root->left, value);
+
+	count++;
 };
 
-bool  BST::Remove(int value)
+bool BST::Remove(int value)
 {
 	if (!root)
 		return false;
-	bool result = Node::Remove(root, value);
+	bool result = RemoveNode(root, value);
 
 	count -= result;
 	return result;
 };
 
-Node* BST::Search(int value)
+bool BST::Search(Node* current, int value)
 {
-	if (root == nullptr)
-		return nullptr;
-	else
-		return root->Search(value);
+	if (!current)
+		return false;
+
+	if (current->data == value)
+		return true;
+	else if (current->data < value)
+		return Search(current->left, value);
+	else if (current->data > value)
+		return Search(current->right, value);
 };
 
+void BST::AddNode(Node*& current, int value)
+{
+	if (!current)
+	{
+		current = new Node(value);
+	}
+	else
+	{
+		if (current->data > value)
+			AddNode(current->left, value);
+		else
+			AddNode(current->right, value);
+	}
+};
+
+bool BST::RemoveNode(Node*& current, int value)
+{
+	if (!current)
+		return false;
+	if (current->data < value)
+		return RemoveNode(current->left, value);
+	else if (current->data > value)
+		return RemoveNode(current->right, value);
+	//잎이 2개
+	if (current->left && current->right)
+	{
+		Node* temp = GetMin(current->right);
+		current->data = temp->data;
+		RemoveNode(current->right, temp->data);
+		delete(temp);
+		return true;
+	}//잎이 1개 == 0개
+	else
+	{
+		Node* temp = current;
+		current = nullptr;
+		delete(temp);
+		return true;
+	}
+};
+BST::Node* BST::GetMin(Node* current)
+{
+	while (current->left)
+		current = current->left;
+
+	return current;
+}
 void BST::Clear(Node*& ptr)
 {
 	if (!ptr) return;
@@ -86,98 +160,4 @@ void BST::Clear(Node*& ptr)
 
 	delete(ptr);
 };
-
-///////////////////////////////////////////////////////
-//Node.h
-///////////////////////////////////////////////////////
-class Node
-{
-public:
-	int data;
-	Node* left;
-	Node* right;
-
-public:
-	Node(int data) : data(data){
-		left = nullptr;
-		right = nullptr;
-	}
-
-	Node* Search(int value);
-	void Add(Node* n);
-	static bool Remove(Node*& ptr, int value);
-	static Node* GetMin(Node* ptr);
-
-};
-
-///////////////////////////////////////////////////////
-//Node.cpp
-///////////////////////////////////////////////////////
-Node* Node::Search(int value)
-{
-	if (data == value)
-		return this;
-	else if (left && data > value)
-		return left->Search(value);
-	else if (right && data < value)
-		return right->Search(value);
-
-	return nullptr;
-}
-
-void Node::Add(Node* n)
-{
-	if (n->data <= this->data) {
-		if (left)
-			left = n;
-		else
-			left->Add(n);
-	}
-	else {
-		if (right)
-			right = n;
-		else
-			right->Add(n);
-	}
-}
-
-bool Node::Remove(Node*& ptr, int value)
-{
-	//종단노드
-	if (!ptr)
-		return false;
-	//잎노드로 이동
-	if (value < ptr->data)
-		return Remove(ptr->left, value);
-	else if (value > ptr->data)
-		return Remove(ptr->right, value);
-	//내가(ptr) 제거될 대상임
-	else
-	{
-		//오른쪽 서브트리의 가장 작은 값으로 변경
-		if (ptr->left && ptr->right)
-		{
-			Node* rightMin = GetMin(ptr->right);
-			ptr->data = rightMin->data;
-			
-			return Remove(ptr->right, rightMin->data);
-		}
-		else
-		{
-			Node* temp = ptr;
-			ptr = ptr->left ? ptr->left : ptr->right;
-			delete temp;
-			return true;
-		}
-	}
-}
-
-Node* Node::GetMin(Node* ptr)
-{
-	while (ptr->left)
-	{
-		ptr = ptr->left;
-	}
-	return ptr;
-}
 ```
